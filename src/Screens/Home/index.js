@@ -2,6 +2,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../Context/AuthContext';
+import HorizontalSlider from '../../Components/Slide';
+import WellcomeText from '../../Components/Wellcome';
+import ProdutosScreen from '../../Components/Produto';
 
 const Home = () => {
 const { logout, user } = useAuth();
@@ -13,7 +16,10 @@ const handleLogout = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Home {user?.email}</Text>
+      <View style={styles.cardWell}>
+        <WellcomeText />
+      </View>
+      <ProdutosScreen/>
       <TouchableOpacity onPress={handleLogout}>
         <Text>Sair</Text>
       </TouchableOpacity>
@@ -24,9 +30,22 @@ const handleLogout = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor:'#FFF'
+    backgroundColor:'#FFF',
+  
+  },
+  slider:{
+    height:100,
+  },
+  cardWell: {
+    width:'100%',
+    backgroundColor: '#fff', // Cor de fundo do card
+    borderRadius: 4,           // Bordas arredondadas
+    padding: 0,                // Espaçamento interno do card
+    margin: 1,                 // Espaçamento externo entre o card e os outros elementos
+    
+    justifyContent:'flex-start'       // Elevação (sombra no Android)
   },
 });
 

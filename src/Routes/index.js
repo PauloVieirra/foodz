@@ -1,21 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AuthRoutes from './Auth.Routes';
 import AppRoutes from './App.Routes';
 import AppAdm from './App.Adim';
 import LoadingIndicator from '../Components/Loading';
+import Topbar from '../Components/Topbar';
 import { useAuth } from '../Context/AuthContext';
 
 const Stack = createStackNavigator();
 
 const AppRoutesControl = () => {
-  const { user, userType, handleLoading, isLoading } = useAuth();
+  const { user, fetchUserProfile, isLoading,isLoggedIn } = useAuth(); // Função fetchUserProfile chamada do contexto
+  const [userType, setUserType] = useState(null);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (user) {
+        // Chama a função que busca o perfil e atualiza o estado userType
+        const profile = await fetchUserProfile();
+        setUserType(profile?.userType); // Define o userType a partir do perfil
+      }
+    };
+
+    fetchProfileData();
+  }, [user]);
+
 
   return (
     <View style={styles.container}>
+      {user && isLoggedIn && <Topbar />}
       <Stack.Navigator>
-        {user ? (
+        {user && isLoggedIn  ? (
           userType === 'ADM' ? (
             <Stack.Screen name="AppAdm" component={AppAdm} options={{ headerShown: false }} />
           ) : (
@@ -25,7 +41,6 @@ const AppRoutesControl = () => {
           <Stack.Screen name="AuthRoutes" component={AuthRoutes} options={{ headerShown: false }} />
         )}
       </Stack.Navigator>
-      {isLoading && <LoadingIndicator />}
     </View>
   );
 };

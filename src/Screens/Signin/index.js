@@ -1,29 +1,29 @@
-// screens/Signin.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { useAuth } from '../../Context/AuthContext'; // Ajuste o caminho conforme sua estrutura de diretórios
 import styles from './styles';
 
 export default function Signin() {
-  const navigation = useNavigation();
-  const { login, handleLoading  } = useAuth();
+  const { login, handleLoading, fetchUserProfile, isLoggedIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
     setError(""); // Limpar erros anteriores
+    handleLoading(true); // Ativa o loading imediatamente ao clicar no botão de login
+
     try {
-      await login(email, password);
-       handleLoading();
-        navigation.navigate('Home'); // Navegar para a tela inicial ou outra tela após login
-        setTimeout(() => {
-        handleLoading(false);
-      }, 500);
+      const { user } = await login(email, password);
+
+      // Após o login, buscar o perfil do usuário
+      const profile = await fetchUserProfile();
+
     } catch (err) {
       setError(err.message);
       Alert.alert("Erro", err.message); // Exibir erro se houver
+    } finally {
+      handleLoading(false); // Desativa o loading após definir a rota ou capturar um erro
     }
   };
 
@@ -41,7 +41,7 @@ export default function Signin() {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Password" 
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -56,11 +56,10 @@ export default function Signin() {
         title="Cadastrar"
         onPress={() => navigation.navigate('Signup')}
       />
-       <Button
+      <Button
         title="Termos"
         onPress={() => navigation.navigate('TermsAndPrivacyScreen')}
       />
     </View>
   );
 }
-
