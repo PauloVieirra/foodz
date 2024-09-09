@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
         width: 38,
         height: 38,
          justifyContent:'center',
-        alignItems:'center'
+        alignItems:'center',
       },
     image: {
         width: 38,
@@ -41,7 +41,26 @@ const styles = StyleSheet.create({
       circle:{
         width:24,
         height:24,
-      }
+      },
+      badge: {
+        width: 22,
+        height: 22,
+        borderRadius: 11, // Ajusta o borderRadius para metade da largura e altura
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        top: 12,
+        right: 10,
+        backgroundColor: '#68D38F'
+      },
+      badgeText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#fff',
+        lineHeight: 20, // Ajusta o lineHeight para centralizar verticalmente o texto
+        marginLeft:2
+        
+      },
 })
 
 export default styles;

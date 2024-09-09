@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { useAuth } from '../../Context/AuthContext'; // Ajuste o caminho conforme sua estrutura de diretórios
+import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
 
 export default function Signin() {
@@ -8,6 +9,7 @@ export default function Signin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigation = useNavigation();
 
   const handleLogin = async () => {
     setError(""); // Limpar erros anteriores

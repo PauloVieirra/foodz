@@ -22,6 +22,10 @@ const styles = StyleSheet.create({
         fontSize:20,
         fontWeight:'800',
         color:"green"
+    },
+    image:{
+        width:50,
+        height:50
     }
 })
 

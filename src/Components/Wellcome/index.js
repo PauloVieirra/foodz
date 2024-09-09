@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import { useAuth } from "../../Context/AuthContext";
 import styles from "./styles";
 
