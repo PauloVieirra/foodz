@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { useAuth } from '../../Context/AuthContext';
 import { useCart } from '../../Context/CartContext';
 
 export default function CartScreen() {
+  const {user} = useAuth();
   const { cartItems, removeFromCart, clearCart, updateQuantity, sendOrder } = useCart(); // Obtém as funções e o estado do contexto
   const [orderStatus, setOrderStatus] = useState(null); // Estado para mensagem de sucesso
 
@@ -40,7 +42,8 @@ export default function CartScreen() {
 
   const handleSendOrder = async () => {
     // Substitua os valores abaixo pelos valores reais conforme a implementação
-    const clienteId = 1; // Exemplo: ID do cliente
+    const clienteId = user.id; // Exemplo: ID do cliente
+    console.log(clienteId);
     const enderecoEntrega = 'Rua Exemplo, 123'; // Exemplo: Endereço de entrega
 
     try {

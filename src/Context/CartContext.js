@@ -72,19 +72,21 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const clearCart = async () => {
+    try {
+      await AsyncStorage.removeItem('cartItems');
+      setCartItems([]);
+    } catch (error) {
+      console.error('Failed to clear cart items:', error);
+    }
   };
 
   // Função para enviar o pedido para o Supabase
-  const sendOrder = async (enderecoEntrega) => {
+  const sendOrder = async (clienteId, enderecoEntrega) => {
     try {
-      if (!user) {
-        throw new Error('Usuário não autenticado. Por favor, faça o login.');
+      if (!clienteId) {
+        throw new Error('Cliente não especificado.');
       }
-
-      // UUID do usuário autenticado
-      const clienteId = user.id;
 
       // Calcula o valor total do pedido
       const valorTotal = cartItems.reduce((total, item) => total + item.quantidade * item.preco, 0);
@@ -94,7 +96,7 @@ export const CartProvider = ({ children }) => {
         .from('pedidos')
         .insert([
           {
-            cliente_id: clienteId, // Usa o UUID do usuário autenticado
+            cliente_id: clienteId, // Usa o ID do cliente fornecido
             data_pedido: new Date().toISOString(),
             valor_total: valorTotal,
             status: 'pendente',
@@ -127,45 +129,38 @@ export const CartProvider = ({ children }) => {
         }
       }
 
-      clearCart();
+      // Limpa o carrinho após o envio
+      await clearCart();
     } catch (error) {
       console.error('Erro ao enviar o pedido:', error);
     }
   };
 
-
-// Função para buscar pedidos com o nome do cliente
-// Função para buscar pedidos com detalhes dos itens e nomes dos produtos
-const fetchOrders = async () => {
-  try {
-    // Busca pedidos e inclui detalhes dos itens e produtos
-    const { data: pedidos, error } = await supabase
-      .from('pedidos')
-      .select(`
-        *,
-        user_profiles (nome),
-        itens_pedido (
+  // Função para buscar pedidos com detalhes dos itens e nomes dos produtos
+  const fetchOrders = async () => {
+    try {
+      // Busca pedidos e inclui detalhes dos itens e produtos
+      const { data: pedidos, error } = await supabase
+        .from('pedidos')
+        .select(`
           *,
-          produtos (nome)
-        )
-      `);
+          user_profiles (nome),
+          itens_pedido (
+            *,
+            produtos (nome)
+          )
+        `);
 
-    if (error) {
-      throw new Error('Erro ao buscar pedidos: ' + error.message);
+      if (error) {
+        throw new Error('Erro ao buscar pedidos: ' + error.message);
+      }
+
+      return pedidos; // Retorna os pedidos com detalhes dos itens e produtos
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      return [];
     }
-
-    return pedidos; // Retorna os pedidos com detalhes dos itens e produtos
-  } catch (error) {
-    console.error('Erro ao buscar pedidos:', error);
-    return [];
-  }
-};
-
-
-
-
-  
-  
+  };
 
   // Função para buscar itens do pedido
   const fetchOrderItems = async (pedidoId) => {
