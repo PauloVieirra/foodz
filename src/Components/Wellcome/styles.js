@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
         color:"#131313"
     },
     subTitle:{
-        fontSize:20,
-        fontWeight:'800',
+        fontSize:16 ,
+        fontWeight:'400',
         color:"green"
     },
     image:{

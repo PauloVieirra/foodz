@@ -43,12 +43,16 @@ export default function CartScreen() {
   const handleSendOrder = async () => {
     // Substitua os valores abaixo pelos valores reais conforme a implementação
     const clienteId = user.id; // Exemplo: ID do cliente
-    console.log(clienteId);
-    const enderecoEntrega = 'Rua Exemplo, 123'; // Exemplo: Endereço de entrega
-
+    const enderecoEntrega = user.profile.endereco; // Exemplo: Endereço de entrega
+    const telefone = user.profile.telefone;
+    
+    console.log(telefone);
     try {
-      await sendOrder(clienteId, enderecoEntrega);
+      await sendOrder(clienteId, enderecoEntrega, telefone);
       setOrderStatus('Pedido enviado com sucesso!');
+      setTimeout(() => {
+        setOrderStatus(null); // Limpa a mensagem após 3 segundos
+      }, 3000); // 3000 milissegundos = 3 segundos
     } catch (error) {
       setOrderStatus('Erro ao enviar o pedido. Tente novamente.');
     }

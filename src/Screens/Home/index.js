@@ -3,16 +3,14 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../Context/AuthContext';
 import HorizontalSlider from '../../Components/Slide';
-import WellcomeText from '../../Components/Wellcome';
+import {WellcomeText} from '../../Components/Wellcome/index';
 import ProdutosScreen from '../../Components/Produto';
 
 const Home = () => {
-const { logout, user } = useAuth();
 
 
-const handleLogout = () => {
-   logout();
-}
+
+
 
   return (
     <View style={styles.container}>
@@ -20,9 +18,7 @@ const handleLogout = () => {
         <WellcomeText />
       </View>
       <ProdutosScreen/>
-      <TouchableOpacity onPress={handleLogout}>
-        <Text>Sair</Text>
-      </TouchableOpacity>
+     
     </View>
   );
 };

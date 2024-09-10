@@ -1,14 +1,23 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { useAuth } from "../../Context/AuthContext";
-import styles from "./styles";
+import React ,{ useContext } from 'react';
+import { View, Text, Button } from 'react-native';
+import { useCart } from '../../Context/CartContext';
 
-export default function Notify() {
-  const { user } = useAuth();
+export default function NotificationList() {
+  const { notifications, loading, markAsRead } = useCart();
+
+  if (loading) return <Text>Carregando...</Text>;
 
   return (
-    <View style={styles.container}>
-     
+    <View>
+      {notifications.map((notification) => (
+        <View key={notification.id}>
+          <Text>{notification.titulo}</Text>
+          <Text>{notification.mensagem}</Text>
+          {!notification.lida && (
+            <Button title="Marcar como Lida" onPress={() => markAsRead(notification.id)} />
+          )}
+        </View>
+      ))}
     </View>
   );
 }

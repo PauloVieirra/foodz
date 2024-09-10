@@ -7,66 +7,63 @@ import DetailsScreen from '../Screens/Detail';
 import Profille from '../Screens/Profille';
 import Pedidos from '../Screens/Registros';
 import Cart from '../Screens/Cart';
+import Menus from '../Screens/Menu';
+import Ofertas from '../Screens/Promocoes';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../Context/CartContext'; // Importe o contexto do carrinho
+import Topbar from '../Components/Topbar';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Navegação principal do Tab
 const TabNavigator = () => {
-  const { cartItems } = useCart(); // Obtém os itens do carrinho do contexto
+  const { cartItems, pedidos } = useCart(); // Obtém os itens do carrinho do contexto
 
   // Calcula a quantidade total de itens no carrinho
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantidade, 0);
+  const totalPedidos = pedidos.length; // Considera a quantidade total de pedidos
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        header: (props) => <Topbar {...props} />,
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
+          if (route.name === 'Inicio') {
             iconName = 'home-outline';
           } else if (route.name === 'Pedidos') {
             iconName = 'receipt-outline';
-          } else if (route.name === 'Cart') {
-            iconName = 'cart-outline';
-          } else if (route.name === 'Profille') {
-            iconName = 'person-outline';
+          } else if (route.name === 'Ofertas') {
+            iconName = 'pricetags-outline';
+          } else if (route.name === 'Menu') {
+            iconName = 'menu';
           }
 
           return (
             <View>
               <Ionicons name={iconName} size={size} color={color} />
-              {route.name === 'Cart' && totalItems > 0 && (
-               <View
-               style={[
-                 styles.badge,
-                 {
-                   backgroundColor: totalItems < 0 ? 'white' : 'green', // Cor do círculo baseada na quantidade de itens
-                 },
-               ]}
-             >
-               <Text
-                 style={[
-                   styles.badgeText,
-                   {
-                     color: totalItems > 1 ? 'black' : 'white', // Cor do texto ajustada para contraste
-                   },
-                 ]}
-               >
-                 {totalItems}
-               </Text>
-             </View>
-             
+              
+              {/* Exibe a badge no ícone do carrinho */}
+              {route.name === 'Carrinho' && totalItems > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{totalItems}</Text>
+                </View>
+              )}
+              
+              {/* Exibe a badge no ícone de pedidos */}
+              {route.name === 'Pedidos' && totalPedidos > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{totalPedidos}</Text>
+                </View>
               )}
             </View>
           );
         },
         tabBarActiveTintColor: 'green',
         tabBarInactiveTintColor: 'gray',
-        headerShown: false,
+        headerShown: true,
         tabBarStyle: {
           backgroundColor: '#fff',
           height: 70,
@@ -79,10 +76,10 @@ const TabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Inicio" component={Home} />
       <Tab.Screen name="Pedidos" component={Pedidos} />
-      <Tab.Screen name="Cart" component={Cart} />
-      <Tab.Screen name="Profille" component={Profille} />
+      <Tab.Screen name="Ofertas" component={Ofertas} />
+      <Tab.Screen name="Menu" component={Menus} />
     </Tab.Navigator>
   );
 };
@@ -91,15 +88,33 @@ const TabNavigator = () => {
 const AppRoutes = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen 
+       <Stack.Screen 
         name="Main" 
         component={TabNavigator} 
-        options={{ headerShown: false }} 
+        options={{ 
+          header: (props) => <Topbar {...props} />, // Adiciona o Topbar como cabeçalho personalizado
+          headerShown: false, // Ativa o cabeçalho para exibir o Topbar
+        }} 
       />
+    
       <Stack.Screen 
         name="Detalhes"
         component={DetailsScreen} 
-        options={{ title: 'Detalhes do Produto' }} 
+        options={{ 
+          title: 'Detalhes do Produto', 
+          header: (props) => <Topbar {...props} />, // Adiciona o Topbar como cabeçalho personalizado
+          headerShown: true, // Ativa o cabeçalho para exibir o Topbar
+        }} 
+      />
+
+    <Stack.Screen 
+        name="Carrinho"
+        component={Cart} 
+        options={{ 
+          title: '', 
+          header: (props) => <Topbar {...props} />, // Adiciona o Topbar como cabeçalho personalizado
+          headerShown: true, // Ativa o cabeçalho para exibir o Topbar
+        }} 
       />
     </Stack.Navigator>
   );

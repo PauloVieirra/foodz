@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../Services/supabaseClient';
 
 // Criando o contexto de autenticação
@@ -18,66 +17,61 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [produtos, setProdutos] = useState([]);
-  const navigate = useNavigation();
 
   // Função para salvar o usuário localmente usando AsyncStorage
   const saveUserLocally = async (user) => {
     try {
       await AsyncStorage.setItem('user', JSON.stringify(user));
-      console.log('Usuário salvo com sucesso.');
     } catch (error) {
       console.error('Erro ao salvar o usuário localmente:', error.message);
     }
   };
 
   // Função para buscar o usuário localmente ou na sessão do Supabase
-  const fetchUser = async () => {
-    try {
-      const storedUser = await AsyncStorage.getItem('user');
-      if (storedUser) {
+ // Função para buscar o usuário localmente ou na sessão do Supabase
+const fetchUser = async () => {
+  try {
+    const storedUser = await AsyncStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoggedIn(true);
+    } else {
+      // Usa o método correto para obter a sessão do Supabase
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (session?.user) {
+        setUser(session.user);
+        await saveUserLocally(session.user);
         setIsLoggedIn(true);
-        setUser(JSON.parse(storedUser));
       } else {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (session && session.user) {
-          setIsLoggedIn(true);
-          setUser(session.user);
-          await saveUserLocally(session.user);
-        } else {
-          setUser(null); // Certifique-se de que o estado do usuário seja definido como null
-        }
+        setUser(null);
+        setIsLoggedIn(false);
       }
-    } catch (error) {
-      console.error('Erro ao carregar usuário:', error.message);
     }
-  };
+  } catch (error) {
+    console.error('Erro ao carregar usuário:', error.message);
+  }
+};
+
 
   // Função para buscar o perfil do usuário logado e atualizar o estado 'user'
   const fetchUserProfile = async () => {
     try {
-      if (!user) {
-        return null;
-      }
+      if (!user) return null;
 
-      // Busca os dados do perfil do usuário a partir do user_id
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('user_id', user.id);  // Compara o id do usuário logado com a coluna user_id
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Erro ao buscar perfil do usuário:', error.message);
         return null;
       }
 
-      const userProfile = data?.[0];  // Obtém o primeiro perfil (ou null se não houver)
-
-      // Verifica novamente se o usuário ainda está logado antes de atualizar o estado
-      if (userProfile && user) {
-        setUser({ ...user, profile: userProfile });
-      }
-
+      const userProfile = data?.[0];
+      setUser((prevUser) => ({ ...prevUser, profile: userProfile }));
+      setUserType(userProfile?.userType || null);
       return userProfile;
     } catch (err) {
       console.error('Erro inesperado ao buscar perfil do usuário:', err);
@@ -99,7 +93,7 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw new Error(error.message);
 
-      // Adiciona o usuário à tabela 'user_profiles' com o ID corretoadm
+      // Adiciona o usuário à tabela 'user_profiles' com o ID correto
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .insert([{ user_id: user.id, email }]);
@@ -156,6 +150,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null); // Define user como null
       setUserType(null); // Define userType como null
       setIsLoggedIn(false);
+
       // Remove todos os dados armazenados localmente
       await AsyncStorage.clear(); // Limpa o AsyncStorage
 
@@ -175,41 +170,40 @@ export const AuthProvider = ({ children }) => {
     fetchUser(); // Busca o usuário quando o provedor é montado
   }, []);
 
- // Função para buscar itens da tabela 'produtos'
- const fetchProdutos = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('produtos')
-      .select('*');
+  // Função para buscar itens da tabela 'produtos'
+  const fetchProdutos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('produtos')
+        .select('*');
 
-    if (error) {
-      console.error('Erro ao buscar produtos:', error.message);
-      return;
+      if (error) {
+        console.error('Erro ao buscar produtos:', error.message);
+        return;
+      }
+
+      setProdutos(data);
+    } catch (err) {
+      console.error('Erro inesperado ao buscar produtos:', err);
     }
-
-    setProdutos(data);
-  } catch (err) {
-    console.error('Erro inesperado ao buscar produtos:', err);
-  }
-};
-
-useEffect(() => {
-  fetchProdutos(); // Busca inicial dos produtos
-
-  // Inscrição em eventos realtime na tabela 'produtos'
-  const produtoListener = supabase
-    .channel('public:produtos')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, (payload) => {
-    
-      fetchProdutos(); // Atualiza os produtos quando houver uma mudança
-    })
-    .subscribe();
-
-  // Limpeza ao desmontar o componente
-  return () => {
-    supabase.removeChannel(produtoListener);
   };
-}, []);
+
+  useEffect(() => {
+    fetchProdutos(); // Busca inicial dos produtos
+
+    // Inscrição em eventos realtime na tabela 'produtos'
+    const produtoListener = supabase
+      .channel('public:produtos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, (payload) => {
+        fetchProdutos(); // Atualiza os produtos quando houver uma mudança
+      })
+      .subscribe();
+
+    // Limpeza ao desmontar o componente
+    return () => {
+      supabase.removeChannel(produtoListener);
+    };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 

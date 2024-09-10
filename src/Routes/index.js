@@ -7,6 +7,7 @@ import AppAdm from './App.Adim';
 import LoadingIndicator from '../Components/Loading';
 import Topbar from '../Components/Topbar';
 import { useAuth } from '../Context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 
@@ -17,9 +18,8 @@ const AppRoutesControl = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       if (user) {
-        // Chama a função que busca o perfil e atualiza o estado userType
         const profile = await fetchUserProfile();
-        setUserType(profile?.userType); // Define o userType a partir do perfil
+        setUserType(profile?.userType || null);
       }
     };
 
@@ -28,8 +28,8 @@ const AppRoutesControl = () => {
 
 
   return (
-    <View style={styles.container}>
-      {user && isLoggedIn && <Topbar />}
+    <SafeAreaView style={styles.container}>
+     
       <Stack.Navigator>
         {user && isLoggedIn  ? (
           userType === 'ADM' ? (
@@ -41,7 +41,7 @@ const AppRoutesControl = () => {
           <Stack.Screen name="AuthRoutes" component={AuthRoutes} options={{ headerShown: false }} />
         )}
       </Stack.Navigator>
-    </View>
+    </SafeAreaView>
   );
 };
 

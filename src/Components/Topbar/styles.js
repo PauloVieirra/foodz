@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
         width:'100%',
         height:52,
         backgroundColor:"#fff",
-        marginTop:48,
+        marginTop:0,
         paddingLeft:16,
         paddingRight:16,
     },
@@ -59,7 +59,34 @@ const styles = StyleSheet.create({
         color: '#fff',
         lineHeight: 20, // Ajusta o lineHeight para centralizar verticalmente o texto
         marginLeft:2
-        
+      },
+      titlescreen:{
+        fontSize:20,
+        fontWeight:'600'
+      },
+      backButton:{
+        width:'auto',
+        height:'100%',
+        flexDirection:'row',
+        gap:10,
+        alignItems:'center',
+        justifyContent:'center',
+      },
+      badge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        minWidth: 16,
+        height: 16,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'red', // Cor de fundo do badge
+      },
+      badgeText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
       },
 })
 
