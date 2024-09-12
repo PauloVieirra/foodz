@@ -1,20 +1,14 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
-import { useAuth } from '../../Context/AuthContext';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
-const LoadingIndicator = ({ message = 'Carregando...', size = 'large', color = '#0000ff' }) => {
-    const { handleLoading } = useAuth();
-
-   const onoffLoading = () => {
-         handleLoading(!handleLoading);
-    }
+const LoadingIndicator = ({ message }) => {
   return (
-    <Pressable style={styles.overlay} onPress={handleLoading}>
-      <View style={styles.container} >
-        <ActivityIndicator size={size} color={color} />
+    <View style={styles.overlay}>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
         <Text style={styles.message}>{message}</Text>
       </View>
-    </Pressable>
+    </View>
   );
 };
 
@@ -25,11 +19,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)', // Adiciona uma sobreposição semitransparente
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Adiciona uma sobreposição semitransparente
     justifyContent: 'center',
-    alignItems: 'center',
+  
+    zIndex: 1000, // Garante que o indicador de carregamento fique sobre outros componentes
   },
   container: {
+    flex:1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white', // Fundo branco para o indicador de carregamento

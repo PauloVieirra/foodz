@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Image, TextInput, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../Context/AuthContext';
+import { useCart } from '../../Context/CartContext';
+import { Ionicons } from '@expo/vector-icons';
 import styles from './styles';
 
 export default function ProdutosScreen() {
   const { fetchProdutos, produtos } = useAuth(); // Obtém a função de busca e os produtos do contexto
+  const { addToCart } = useCart(); // Obtém o carrinho e a
   const [searchText, setSearchText] = useState(''); // Estado para o texto de busca
   const [filteredProdutos, setFilteredProdutos] = useState([]); // Estado para os produtos filtrados
 
@@ -44,7 +47,9 @@ export default function ProdutosScreen() {
             <Text style={styles.itemMedia}>{item.quant}{item.medida}</Text>
           </View>
         </View>
-   
+        <TouchableOpacity style={styles.btnplus} onPress={() => addToCart({ ...item, quantidade: 1 })}>
+          <Text style={styles.textbtn}>+</Text>
+        </TouchableOpacity>
     
       </Pressable>
     );

@@ -12,35 +12,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const Stack = createStackNavigator();
 
 const AppRoutesControl = () => {
-  const { user, fetchUserProfile, isLoading,isLoggedIn } = useAuth(); // Função fetchUserProfile chamada do contexto
-  const [userType, setUserType] = useState(null);
-
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (user) {
-        const profile = await fetchUserProfile();
-        setUserType(profile?.userType || null);
-      }
-    };
-
-    fetchProfileData();
-  }, [user]);
-
+  const { user, fetchUserProfile, userType,isLoggedIn, isLoading } = useAuth(); // Função fetchUserProfile chamada do contexto
+  
 
   return (
     <SafeAreaView style={styles.container}>
-     
+     <SafeAreaView style={styles.container}>
+     {isLoading && (
+          <LoadingIndicator/>
+      )}
       <Stack.Navigator>
-        {user && isLoggedIn  ? (
-          userType === 'ADM' ? (
-            <Stack.Screen name="AppAdm" component={AppAdm} options={{ headerShown: false }} />
-          ) : (
-            <Stack.Screen name="AppRoutes" component={AppRoutes} options={{ headerShown: false }} />
-          )
-        ) : (
+        {!isLoggedIn ? (
+          
           <Stack.Screen name="AuthRoutes" component={AuthRoutes} options={{ headerShown: false }} />
+        ) : userType === 'ADM' ? (
+          <Stack.Screen name="AppAdm" component={AppAdm} options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="AppRoutes" component={AppRoutes} options={{ headerShown: false }} />
         )}
       </Stack.Navigator>
+    </SafeAreaView>
     </SafeAreaView>
   );
 };

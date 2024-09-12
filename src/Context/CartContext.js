@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../Services/supabaseClient'; 
 import { useAuth } from './AuthContext';
+import LoadingIndicator from '../Components/Loading';
 
 const CartContext = createContext();
 
@@ -12,8 +13,9 @@ export const CartProvider = ({ children }) => {
   const [pedidos, setPedidos] = useState([]);
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth(); // Obtendo o usuário autenticado do contexto
+  const [isLoading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const { user} = useAuth(); // Obtendo o usuário autenticado do contexto
 
   useEffect(() => {
     const loadUserOrders = async () => {
@@ -61,7 +63,7 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (produto) => {
     const existingItem = cartItems.find((item) => item.id === produto.id);
-
+  
     if (existingItem) {
       setCartItems((prevItems) =>
         prevItems.map((item) =>
@@ -74,7 +76,7 @@ export const CartProvider = ({ children }) => {
       setCartItems((prevItems) => [...prevItems, { ...produto, quantidade: produto.quantidade }]);
     }
   };
-
+  
   const removeFromCart = (id) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
@@ -107,7 +109,8 @@ const sendOrder = async (clienteId, enderecoEntrega, telefone) => {
     if (!clienteId) {
       throw new Error('Cliente não especificado.');
     }
-
+    
+    handleLoading(true,  'Enviando seu pedido!!!');
     // Calcula o valor total do pedido
     const valorTotal = cartItems.reduce((total, item) => total + item.quantidade * item.preco, 0);
 
@@ -144,7 +147,12 @@ const sendOrder = async (clienteId, enderecoEntrega, telefone) => {
             subtotal: item.quantidade * item.preco,
             image_url: item.imagem_url, // Inclua a URL da imagem aqui
           },
+
         ]);
+        handleLoading(true,  'Pedido enviado!!!');
+        setTimeout(() => {
+          handleLoading(false);
+        }, 3000);
 
       if (itemError) {
         throw new Error('Erro ao enviar o item do pedido: ' + itemError.message);
@@ -325,6 +333,12 @@ const fetchUserOrders = async (userId) => {
     }
   }, [user]);
 
+    //função handleLoading para incluir uma mensagem
+const handleLoading = (loading, message = '') => {
+  setLoading(loading);
+  setLoadingMessage(message);
+};
+
   return (
     <CartContext.Provider
       value={{
@@ -339,13 +353,15 @@ const fetchUserOrders = async (userId) => {
         fetchOrderItems,
         updateOrderStatus,
         fetchUserOrders,
+        handleLoading,
         notifications,
-        loading,
+        isLoading,
+        loadingMessage, // Inclua a mensagem de carregamento aqui
         markAsRead,
         sendNotification,
       }}
     >
-      {children}
+       {isLoading ? <LoadingIndicator message={loadingMessage} /> : children}
     </CartContext.Provider>
   );
 };

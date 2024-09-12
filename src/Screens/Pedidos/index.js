@@ -92,7 +92,7 @@ export default function PedidosAdm() {
                 </ScrollView>
               )}
 
-              <Button title="Aceitar Pedido" onPress={() => handleStatusChange("aceito")} />
+              <Button title="Aceitar Pedido" onPress={() => handleStatusChange("preparando")} />
               <Button title="Cancelar Pedido" onPress={() => handleStatusChange("cancelado")} />
               <Button title="Saiu para Entrega" onPress={() => handleStatusChange("entrega")} />
               <Button title="Finalizar Pedido" onPress={() => handleStatusChange("finalizado")} />

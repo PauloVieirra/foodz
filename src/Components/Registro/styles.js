@@ -30,7 +30,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)"
   },
   modalContent: {
-    width: "80%",
+    width: "100%",
+    height:'100%',
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
@@ -41,24 +42,30 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20 ,
     fontWeight: "bold",
     marginBottom: 10,
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    justifyContent:'center',
+    backgroundColor:"#fff",
+    borderBottomWidth:1,
+    borderBottomColor:'#C9C7C7',
+    paddingHorizontal:6,
+    paddingVertical:16
   },
   itemImage: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     marginRight: 10,
   },
   itemDetails: {
     flex: 1,
   },
   itemName: {
+    color:'#505151',
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -89,6 +96,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  textcod:{
+    fontSize:18,
+    fontWeight:'bold',
+    color:"#5B5B5B"
+  },
+  textcard:{
+    fontSize:18,
+    marginTop:6
+  },
+  textdata:{
+    fontSize:15,
+    marginTop:6
+  },
+  textprice:{
+    fontSize:18,
+    fontWeight:'bold',
+    color:"#239854"
+  }
 });
 
 export default styles;

@@ -5,13 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
 
 export default function Signin() {
-  const { login, handleLoading, fetchUserProfile, isLoggedIn } = useAuth();
+  const { login, fetchUserProfile, handleLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
+  const handleLog = async () => {
     setError(""); // Limpar erros anteriores
     handleLoading(true); // Ativa o loading imediatamente ao clicar no botão de login
 
@@ -25,7 +25,7 @@ export default function Signin() {
       setError(err.message);
       Alert.alert("Erro", err.message); // Exibir erro se houver
     } finally {
-      handleLoading(false); // Desativa o loading após definir a rota ou capturar um erro
+      handleLoading(false); // Desativa o loading após o login
     }
   };
 
@@ -49,19 +49,8 @@ export default function Signin() {
         secureTextEntry
         textContentType="password"
       />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Button
-        title="Login"
-        onPress={handleLogin}
-      />
-      <Button
-        title="Cadastrar"
-        onPress={() => navigation.navigate('Signup')}
-      />
-      <Button
-        title="Termos"
-        onPress={() => navigation.navigate('TermsAndPrivacyScreen')}
-      />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <Button title="Sign In" onPress={handleLog} />
     </View>
   );
 }

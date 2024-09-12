@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../Services/supabaseClient';
+import LoadingIndicator from '../Components/Loading';
 
 // Criando o contexto de autenticação
 const AuthContext = createContext();
@@ -15,8 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [isLoading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [produtos, setProdutos] = useState([]);
+  const navigation = useNavigation();
 
   // Função para salvar o usuário localmente usando AsyncStorage
   const saveUserLocally = async (user) => {
@@ -28,31 +32,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Função para buscar o usuário localmente ou na sessão do Supabase
- // Função para buscar o usuário localmente ou na sessão do Supabase
-const fetchUser = async () => {
-  try {
-    const storedUser = await AsyncStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsLoggedIn(true);
-    } else {
-      // Usa o método correto para obter a sessão do Supabase
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      if (session?.user) {
-        setUser(session.user);
-        await saveUserLocally(session.user);
+  const fetchUser = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
         setIsLoggedIn(true);
       } else {
-        setUser(null);
-        setIsLoggedIn(false);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (session?.user) {
+          setUser(session.user);
+          await saveUserLocally(session.user);
+          setIsLoggedIn(true);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+        }
       }
+    } catch (error) {
+      console.error('Erro ao carregar usuário:', error.message);
     }
-  } catch (error) {
-    console.error('Erro ao carregar usuário:', error.message);
-  }
-};
-
+  };
 
   // Função para buscar o perfil do usuário logado e atualizar o estado 'user'
   const fetchUserProfile = async () => {
@@ -82,9 +83,8 @@ const fetchUser = async () => {
   // Função de cadastro
   const signUp = async (email, password) => {
     try {
-      setLoading(true);
+      handleLoading(true, 'Criando sua conta...'); // Ativa o loading ao iniciar o cadastro
 
-      // Cria o usuário no Supabase Auth
       const { data: { user }, error } = await supabase.auth.signUp({
         email,
         password,
@@ -93,7 +93,6 @@ const fetchUser = async () => {
 
       if (error) throw new Error(error.message);
 
-      // Adiciona o usuário à tabela 'user_profiles' com o ID correto
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .insert([{ user_id: user.id, email }]);
@@ -106,17 +105,16 @@ const fetchUser = async () => {
       console.error('Erro ao fazer cadastro:', error.message);
       throw error;
     } finally {
-      setLoading(false);
+      handleLoading(false); // Desativa o loading após o cadastro
     }
   };
 
   // Função de login
   const login = async (email, password) => {
     try {
-      setLoading(true); // Ativa o loading ao iniciar o login
+      handleLoading(true, 'Entrando...'); // Ativa o loading ao iniciar o login
 
-      // Limpa o AsyncStorage antes de salvar os novos dados do usuário
-      await AsyncStorage.clear(); // Remove todos os dados armazenados localmente
+      await AsyncStorage.clear();
 
       const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
@@ -127,50 +125,51 @@ const fetchUser = async () => {
 
       setUser(user);
       setIsLoggedIn(true);
-      await saveUserLocally(user); // Salva o usuário localmente após o login
+      await saveUserLocally(user);
       return { user };
     } catch (error) {
       console.error('Erro ao fazer login:', error.message);
       throw error;
     } finally {
-      setLoading(false); // Desativa o loading após o login
+      handleLoading(false); // Desativa o loading após o login
     }
   };
 
   // Função de logout atualizada
   const logout = async () => {
     try {
-      // Tenta deslogar o usuário no Supabase
+      handleLoading(true, 'Saindo...'); // Mensagem de carregamento específica para o logout
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw new Error(error.message);
       }
-
-      // Limpa o estado local do usuário
-      setUser(null); // Define user como null
-      setUserType(null); // Define userType como null
+      setUser(null);
+      setUserType(null);
       setIsLoggedIn(false);
-
-      // Remove todos os dados armazenados localmente
-      await AsyncStorage.clear(); // Limpa o AsyncStorage
-
+      await AsyncStorage.clear();
       console.log('Usuário deslogado com sucesso');
     } catch (error) {
       console.error('Erro ao fazer logout:', error.message);
       throw error;
+    } finally {
+      handleLoading(false); // Desativa o loading após o logout
     }
   };
 
-  // Função para lidar com o estado de loading
-  const handleLoading = () => {
-    setLoading((prevLoading) => !prevLoading);
+  //função handleLoading para incluir uma mensagem
+const handleLoading = (loading, message = '') => {
+  setLoading(loading);
+  setLoadingMessage(message);
+};
+
+  const handleLoadingCart = (loading) => {
+    setLoadingCar(loading);
   };
 
   useEffect(() => {
     fetchUser(); // Busca o usuário quando o provedor é montado
   }, []);
 
-  // Função para buscar itens da tabela 'produtos'
   const fetchProdutos = async () => {
     try {
       const { data, error } = await supabase
@@ -191,7 +190,6 @@ const fetchUser = async () => {
   useEffect(() => {
     fetchProdutos(); // Busca inicial dos produtos
 
-    // Inscrição em eventos realtime na tabela 'produtos'
     const produtoListener = supabase
       .channel('public:produtos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, (payload) => {
@@ -199,28 +197,29 @@ const fetchUser = async () => {
       })
       .subscribe();
 
-    // Limpeza ao desmontar o componente
     return () => {
       supabase.removeChannel(produtoListener);
     };
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ 
-      login, 
-      logout, 
-      signUp, 
-      fetchUser, 
-      fetchUserProfile,
-      handleLoading,
-      fetchProdutos,
-      user, 
-      userType, 
-      isLoading,
-      produtos,
-      isLoggedIn
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  
+return (
+  <AuthContext.Provider value={{ 
+    login, 
+    logout, 
+    signUp, 
+    fetchUser, 
+    fetchUserProfile,
+    handleLoading,
+    fetchProdutos,
+    user, 
+    userType, 
+    isLoading,
+    loadingMessage, // Inclua a mensagem de carregamento aqui
+    produtos,
+    isLoggedIn
+  }}>
+    {isLoading ? <LoadingIndicator message={loadingMessage} /> : children}
+  </AuthContext.Provider>
+);
 };

@@ -95,7 +95,23 @@ const styles = StyleSheet.create({
        borderRadius:8,
        backgroundColor:'#EFEFEF',
        paddingHorizontal:10,
-
+    },
+    btnplus:{
+      width:42,
+      height:42,
+      borderRadius:8,
+      backgroundColor:'#21A95D',
+      alignItems:'center',
+      justifyContent:'center',
+      position:'absolute',
+      zIndex:10,
+      bottom:10,
+      right:10
+    },
+    textbtn:{
+      fontSize:26,
+      color:'#fff',
+      fontWeight:'200'
     }
   });
 

@@ -1,58 +1,70 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Button, Image, TouchableOpacity, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../Context/AuthContext';
 import { useCart } from '../../Context/CartContext';
+import { Ionicons } from '@expo/vector-icons';
+import styles from './style';
 
 export default function CartScreen() {
-  const {user} = useAuth();
+  const { user, handleLoading } = useAuth();
   const { cartItems, removeFromCart, clearCart, updateQuantity, sendOrder } = useCart(); // Obtém as funções e o estado do contexto
   const [orderStatus, setOrderStatus] = useState(null); // Estado para mensagem de sucesso
+  const navigation = useNavigation();
+  console.log(cartItems);
 
-  // Calcula o total utilizando o método reduce
+  // Calcula o total do carrinho utilizando o método reduce
   const total = cartItems
     .reduce((total, item) => total + parseFloat(item.preco) * (item.quantidade || 1), 0)
     .toFixed(2);
 
+  // Calcula o total de cada item
+  const totalItem = (item) => (parseFloat(item.preco) * (item.quantidade || 1)).toFixed(2);
+
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Text style={styles.itemName}>{item.nome}</Text>
-      <Text style={styles.itemPrice}>R$ {item.preco}</Text>
+      <Image source={{ uri: item.imagem_url || 'https://via.placeholder.com/150' }} style={styles.img} resizeMode='contain' />
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemName}>{item.nome}</Text>
+        <Text style={styles.itemPrice}>R$ {item.preco}</Text>
+        <View style={styles.line}>
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => updateQuantity(item.id, item.quantidade - 1)}>
+              <Text style={styles.buttonText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{item.quantidade}</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => updateQuantity(item.id, item.quantidade + 1)}>
+              <Text style={styles.buttonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+ 
+      <View style={styles.box}>
       <Text style={styles.itemQuantity}>{item.quantidade} {item.medida}</Text>
-
-      {/* Botões para alterar quantidade */}
-      <View style={styles.quantityContainer}>
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => updateQuantity(item.id, item.quantidade - 1)}>
-          <Text style={styles.buttonText}>-</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.quantityText}>{item.quantidade}</Text>
-        
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => updateQuantity(item.id, item.quantidade + 1)}>
-          <Text style={styles.buttonText}>+</Text>
-        </TouchableOpacity>
+      <Text style={styles.textpricesecondary}>R$ {totalItem(item)}</Text> 
       </View>
 
-      <Button title="Remover" onPress={() => removeFromCart(item.id)} />
     </View>
   );
 
   const handleSendOrder = async () => {
-    // Substitua os valores abaixo pelos valores reais conforme a implementação
     const clienteId = user.id; // Exemplo: ID do cliente
     const enderecoEntrega = user.profile.endereco; // Exemplo: Endereço de entrega
     const telefone = user.profile.telefone;
-    
-    console.log(telefone);
     try {
       await sendOrder(clienteId, enderecoEntrega, telefone);
+
       setOrderStatus('Pedido enviado com sucesso!');
       setTimeout(() => {
         setOrderStatus(null); // Limpa a mensagem após 3 segundos
+        handleLoading(false);
       }, 3000); // 3000 milissegundos = 3 segundos
+
     } catch (error) {
       setOrderStatus('Erro ao enviar o pedido. Tente novamente.');
     }
@@ -69,25 +81,32 @@ export default function CartScreen() {
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={<Text style={styles.emptyText}>Carrinho Vazio</Text>}
       />
-      <Text style={styles.totalText}>Total: R$ {total}</Text>
-      <Button title="Limpar Carrinho" onPress={clearCart} />
-      <Button title="Confirmar Pedido" onPress={handleSendOrder} />
-      {orderStatus && <Text style={styles.orderStatus}>{orderStatus}</Text>}
+<View> 
+    <View style={styles.linetotal}>
+       <Text style={styles.totalText}>Total: R$ {total}</Text>
+    </View>
+    <View style={styles.linebtn}>
+        {cartItems && cartItems.length > 0 ? (
+          <>
+
+          
+            <Pressable style={styles.btndelet} onPress={clearCart}>
+              <Ionicons name="trash-outline" size={26} color={'#fff'} />
+            </Pressable>
+            <Pressable onPress={handleSendOrder} style={styles.btnsend}>
+              <Text style={styles.btntxt}>Enviar Pedido</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Pressable style={styles.btnsend}>
+              <Text style={styles.btntxt}>Colocar algo no carrinho</Text>
+            </Pressable>
+          </>
+        )}
+        {orderStatus && <Text style={styles.orderStatus}>{orderStatus}</Text>}
+      </View>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  itemContainer: { padding: 8, borderBottomWidth: 1, borderColor: '#ccc' },
-  itemName: { fontSize: 18 },
-  itemPrice: { fontSize: 16, color: 'green' },
-  itemQuantity: { fontSize: 16, marginVertical: 8 },
-  totalText: { fontSize: 20, fontWeight: 'bold', marginVertical: 16 },
-  emptyText: { textAlign: 'center', marginTop: 20, fontSize: 16 },
-  quantityContainer: { flexDirection: 'row', alignItems: 'center' },
-  button: { backgroundColor: '#ddd', padding: 8, marginHorizontal: 5, borderRadius: 4 },
-  buttonText: { fontSize: 20, fontWeight: 'bold' },
-  quantityText: { fontSize: 16, paddingHorizontal: 8 },
-  orderStatus: { marginTop: 16, fontSize: 16, fontWeight: 'bold', color: 'green' }
-});

@@ -26,13 +26,15 @@ export default function Registros() {
           pedidos.map((pedido) => (
             <Pressable key={pedido.id} style={styles.card} onPress={() => handleOpenModal(pedido)}>
               <View style={styles.line}>
-                <Text>Código: {pedido.id}</Text>
+                <Text style={styles.textcod}>Código: {pedido.id}</Text>
                 <StatusTag status= {pedido.status}> <Text> {pedido.status}</Text> </StatusTag>
               </View>
-              <Text>Cliente: {pedido.user_profiles.nome}</Text>
-              <Text>Data: {new Date(pedido.data_pedido).toLocaleDateString()}</Text>
-              <Text>Total: R$ {pedido.valor_total.toFixed(2)}</Text>
-              <Text>Telefone: {pedido.telefone}</Text>
+              <View styles={styles.space}></View>
+              <View style={styles.line}>
+              <Text style={styles.textcard}>R$ {pedido.valor_total.toFixed(2)}</Text>
+              <Text style={styles.textdata}>{new Date(pedido.data_pedido).toLocaleDateString()}</Text>
+              </View>
+
             </Pressable>
           ))
         ) : (
@@ -57,15 +59,24 @@ export default function Registros() {
                       <Image
                         source={{ uri: item.image_url }}
                         style={styles.itemImage}
-                        resizeMode="cover"
+                        resizeMode='contain'
                       />
                     ) : (
                       <Text>Imagem não disponível</Text>
                     )}
                     <View style={styles.itemDetails}>
                       <Text style={styles.itemName}>{item.produtos?.nome}</Text>
+                      <Text style={styles.textprice}>R$ {item.preco_unitario.toFixed(2)}</Text>
+                      <View style={styles.line}> 
                       <Text>Quantidade: {item.quantidade}</Text>
-                      <Text>Valor: R$ {item.preco_unitario.toFixed(2)}</Text>
+                      {selectedPedido.status === "preparando" && (
+                          <Text>Preparando</Text>
+                        )}
+                        {selectedPedido.status === "cancelado" && (
+                          <Text>Cancelado</Text>
+                        )}
+                      </View>
+                      
                     </View>
                   </View>
                 ))

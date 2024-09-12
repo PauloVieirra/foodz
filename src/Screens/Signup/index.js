@@ -35,7 +35,7 @@ export default function Signup() {
       // Navegar para a página inicial após o login bem-sucedido
       navigation.navigate('Home');
       setTimeout(() => {
-        handleLoading(false);
+        handleLoading();
       }, 500);
     } catch (err) {
       setError(err.message);
